@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="view_account_journam_form" model="ir.ui.view">
+            <field name="name">account.journal.inherit.view.form</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='bank_account']/group" position="after">
+                    <group string="Bank Statements">
+                        <field
+                            name="public_can_view"
+                            string="Publicly viewable"
+                        />
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
