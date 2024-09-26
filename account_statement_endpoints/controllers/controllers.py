@@ -5,9 +5,6 @@ from odoo.tools import date_utils
 import json, base64
 import werkzeug.datastructures
 
-import logging
-_logger = logging.getLogger(__name__)
-
 class BankStatements(http.Controller):
     # Included in 'odoo.http' from Odoo (15/16/17?)
     def _make_json_response(self, data, headers=None, cookies=None, status=200):
@@ -20,6 +17,9 @@ class BankStatements(http.Controller):
 
     @http.route('/bank/balances', auth='public')
     def bank_balances(self):
+        """
+        Used to retrieve top-level summary view (just the balances of public journals).
+        """
         try:
             # For each of the public journals, fetch the ending balance from the
             # latest statement
@@ -37,7 +37,6 @@ class BankStatements(http.Controller):
                 bank_statement = http.request.env['account.bank.statement'].sudo().search(domain, order=orderby, limit=1).read([
                     'id',
                     'name',
-                    'journal_id',
                     'balance_end'
                 ])
                 if len(bank_statement) < 1:
@@ -47,9 +46,10 @@ class BankStatements(http.Controller):
                 balances.append({
                     "id": statement['id'],
                     "name": statement['name'],
-                    "journal_id": statement['journal_id'][0],
-                    "journal_name": statement['journal_id'][1],
                     "balance_end": statement['balance_end'],
+                    "journal_id": journal.id,
+                    "journal_name": journal.name,
+                    "public_slug": journal.public_slug,
                 })
 
             # Return JSON response with list of bank statements
@@ -71,6 +71,9 @@ class BankStatements(http.Controller):
 
     @http.route('/bank/statements', auth='public')
     def bank_statements(self):
+        """
+        Used to retrieve top-level summary view (just the balances of public journals).
+        """
         try:
             # Fetch list of bank statements
             domain = [
@@ -94,13 +97,13 @@ class BankStatements(http.Controller):
             }
             return self._make_json_response(data, headers=None, cookies=None, status=500)
 
-    @http.route('/bank/statements/<int:id>', auth='public')
-    def bank_statement_by_id(self, id):
+    @http.route('/bank/statements/<public_slug>', auth='public')
+    def bank_statement_by_id(self, public_slug):
         try:
             # Fetch single bank statement with name as 'yyyy-mm'
             domain = [
-                ('id', '=', id),
                 ('journal_id.public_can_view', '=', True)
+                ('journal_id.public_slug', '=', public_slug)
             ]  
             bank_statements = http.request.env['account.bank.statement'].sudo().search(domain, limit=1)
             if not bank_statements:
@@ -189,7 +192,6 @@ class BankStatements(http.Controller):
                 'id',
                 'journal_id',
             ])
-            _logger.info(f"statement {statement}")
             journal = http.request.env['account.journal'].sudo().browse(statement.journal_id).read([
                 'public_can_view'
             ])

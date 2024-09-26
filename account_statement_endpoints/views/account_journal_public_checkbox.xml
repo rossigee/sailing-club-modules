@@ -12,6 +12,10 @@
                             name="public_can_view"
                             string="Publicly viewable"
                         />
+                        <field
+                            name="public_slug"
+                            string="Public ID/slug"
+                        />
                     </group>
                 </xpath>
             </field>

@@ -10,3 +10,4 @@ class AccountJournalInherit(models.Model):
     _inherit = 'account.journal'
 
     public_can_view = fields.Boolean(string="Publicly viewable")
+    public_slug = fields.Char(string="ID/slug for this journal")
