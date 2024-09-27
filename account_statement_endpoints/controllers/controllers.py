@@ -173,7 +173,7 @@ class BankStatements(http.Controller):
             ]
 
             # Attachments
-            attachments = _get_attachments(bank_statement.id)
+            attachments = self._get_attachments(bank_statement.id)
 
             # Present details of bank statement, including lines and a list of attachments
             data = {
