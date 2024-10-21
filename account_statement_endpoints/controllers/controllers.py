@@ -115,8 +115,9 @@ class BankStatements(http.Controller):
             journal = journals[0]
             account = {
                 'name': journal.name,
-                'bankname': journal.bank_id.name,
                 'number': journal.bank_account_id.acc_number,
+                'bankname': journal.bank_id.name,
+                'branch': journal.bank_id.city,
             }
 
             # Fetch statements for the journal
