@@ -98,24 +98,43 @@ class BankStatements(http.Controller):
 
     @http.route('/bank/statements/<book>', auth='public')
     def bank_statements_list_view(self, book):
+        # TODO: Add a caching mechanism to avoid resource attacks
+
         try:
-            domain = [
+            # Fetch bank account details from journal
+            journals = http.request.env['account.journal'].sudo().search([
+                ('public_can_view', '=', True),
+                ('public_slug', '=', book),
+            ])
+            if not journals:
+                data = {
+                    "status": "not found",
+                    "error": f"No public journal found with slug '{book}'"
+                }
+                return self._make_json_response(data, headers=None, cookies=None, status=404)
+            journal = journals[0]
+            account = {
+                'name': journal.name,
+                'bankname': journal.bank_id.name,
+                'number': journal.bank_account_id.acc_number,
+            }
+
+            # Fetch statements for the journal
+            orderby = "date desc, id desc"
+            bank_statements = http.request.env['account.bank.statement'].sudo().search([
                 ('journal_id.public_can_view', '=', True),
                 ('journal_id.public_slug', '=', book),
-            ]
-            orderby = "date desc, id desc"
-            bank_statements = http.request.env['account.bank.statement'].sudo().search(domain, order=orderby)
+            ], order=orderby)
             if not bank_statements:
                 data = {
                     "status": "not found",
-                    "error": f"No bank statements found for journal with public slug '{book}'"
+                    "error": f"No bank statements found for public journal with slug '{book}'"
                 }
                 return self._make_json_response(data, headers=None, cookies=None, status=404)
 
             bank_statements_data = []
             for bank_statement in bank_statements:
                 attachments = self._get_attachments(bank_statement.id)
-
                 bank_statements_data.append({
                     'id': bank_statement.id,
                     'name': bank_statement.name,
@@ -126,6 +145,7 @@ class BankStatements(http.Controller):
 
             data = {
                 "status": "ok",
+                "account": account,
                 "statements": bank_statements_data
             }
             return self._make_json_response(data, headers=None, cookies=None, status=200)
