@@ -3,7 +3,7 @@
 
 {
     'name': 'Bank Statements Endpoint',
-    'version': '14.0.1.0.4',
+    'version': '15.0.1.0.0',
     'author': 'Ross Golder',
     'website': 'https://golder.org/',
     'license': 'AGPL-3',
