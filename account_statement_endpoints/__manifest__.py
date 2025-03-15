@@ -13,7 +13,7 @@
         This module allows us to present up-to-date details from our (publicly funded) club's bank book on the club's (static) public website. As up-to-date as can be expected given we have to manually drive to 'the bank' to update the bank book, and then drive home and manually input the new lines into Odoo.
     """,    
     'depends': [
-        'account',
+        'account_statement_base',
     ],
     'data': [
         'views/account_journal_public_checkbox.xml',

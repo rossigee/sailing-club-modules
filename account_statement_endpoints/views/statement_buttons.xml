@@ -4,7 +4,7 @@
         <record id="view_bank_statement_form" model="ir.ui.view">
             <field name="name">account.bank.statement.inherit.view.form</field>
             <field name="model">account.bank.statement</field>
-            <field name="inherit_id" ref="account.view_bank_statement_form" />
+            <field name="inherit_id" ref="account_statement_base.view_bank_statement_form" />
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='button_post']" position="before">
                     <button
