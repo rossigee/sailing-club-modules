@@ -3,11 +3,20 @@
 
 from odoo import models, api
 
-class AccountBankStatementInherit(models.Model):
+class AccountBankStatement(models.Model):
     """
     Adds action to handle sorting of bank statements and recalculation of ending balance
     """
     _inherit = 'account.bank.statement'
+
+    @api.model
+    def _get_previous_statement_id(self):
+        domain = [
+            ('journal_id', '=', self.journal_id.id),
+            ('date', '<', self.date),
+        ]
+        previous_statement = self.search(domain, order='date desc, id desc', limit=1)
+        return previous_statement.id if previous_statement else False
 
     def action_bank_statement_sort_by_date(self):
         """
@@ -35,15 +44,18 @@ class AccountBankStatementInherit(models.Model):
 
         # Find ending balance from previous statement, or zero if none
         new_balance_start = 0.0
-        if self.previous_statement_id:
-            new_balance_start = self.previous_statement_id.balance_end_real
+        previous_statement_id = self._get_previous_statement_id()
+        if previous_statement_id:
+            previous_statement = self.browse(previous_statement_id)
+            new_balance_start = previous_statement.balance_end_real
+        self.balance_start = new_balance_start
 
         # Set ending balance based on starting balance and transactions
         new_balance_end = self.balance_start
         for line in self.line_ids:
             new_balance_end += line.amount
         self.balance_end_real = new_balance_end
-                    
+
         return None
 
     @api.model
