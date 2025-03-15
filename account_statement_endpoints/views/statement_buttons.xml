@@ -6,7 +6,7 @@
             <field name="model">account.bank.statement</field>
             <field name="inherit_id" ref="account_statement_base.view_bank_statement_form" />
             <field name="arch" type="xml">
-                <xpath expr="//button[@name='button_post']" position="before">
+                <xpath expr="//div[@name='button_box']" position="inside">
                     <button
                         name="action_bank_statement_sort_by_date"
                         string="Sort"
