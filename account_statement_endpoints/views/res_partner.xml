@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_team_member" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.team.member</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="company_type" position="after">
+                <field name="is_team_member" 
+                       attrs="{'invisible': [('is_company', '=', True)]}" 
+                       groups="base.group_user"/>
+            </field>
+        </field>
+    </record>
+    
+    <!-- Add to search view for easy filtering -->
+    <record id="view_partner_search_inherit_team_member" model="ir.ui.view">
+        <field name="name">res.partner.search.inherit.team.member</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="type_company" position="after">
+                <separator/>
+                <filter string="Team Members" name="team_members" domain="[('is_team_member', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

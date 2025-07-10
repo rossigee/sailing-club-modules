@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import http
 from odoo.tools import date_utils
+from .rate_limit import rate_limit
 
 import json, base64
 import werkzeug.datastructures
@@ -12,6 +13,10 @@ class BankStatements(http.Controller):
         headers['Content-Length'] = len(data)
         if 'Content-Type' not in headers:
             headers['Content-Type'] = 'application/json; charset=utf-8'
+        # Add CORS headers
+        headers['Access-Control-Allow-Origin'] = '*'
+        headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         data = json.dumps(data, ensure_ascii=False, default=date_utils.json_default)
         return http.Response(data, status=status, headers=headers.to_wsgi_list())
 
@@ -36,7 +41,8 @@ class BankStatements(http.Controller):
             } for att in raw_attachments
         ]
 
-    @http.route('/bank/journals', auth='public')
+    @http.route('/bank/journals', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
     def bank_journals(self):
         """
         Used to retrieve top-level summary view, which is a list of journals and
@@ -96,7 +102,8 @@ class BankStatements(http.Controller):
             }
             return self._make_json_response(data, headers=None, cookies=None, status=500)
 
-    @http.route('/bank/statements/<book>', auth='public')
+    @http.route('/bank/statements/<book>', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
     def bank_statements_list_view(self, book):
         # TODO: Add a caching mechanism to avoid resource attacks
 
@@ -161,7 +168,8 @@ class BankStatements(http.Controller):
             }
             return self._make_json_response(data, headers=None, cookies=None, status=500)
 
-    @http.route('/bank/statements/<book>/<page>', auth='public')
+    @http.route('/bank/statements/<book>/<page>', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=20, requests_per_hour=300)  # Lower limits for detailed views
     def bank_statements_detail_view(self, book, page):
         try:
             domain = [
@@ -221,7 +229,8 @@ class BankStatements(http.Controller):
             }
             return self._make_json_response(data, headers=None, cookies=None, status=500)
 
-    @http.route('/bank/statements/image/<int:att_id>', auth='public')
+    @http.route('/bank/statements/image/<int:att_id>', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=60, requests_per_hour=1000)  # Higher limits for images
     def bank_statement_image_by_id(self, att_id):
         try:
             # Identify requested attachment
@@ -265,6 +274,154 @@ class BankStatements(http.Controller):
         except Exception as e:
             import logging
             logging.error(f"Error accessing bank statement image: {str(e)}", exc_info=True)
+            data = {
+                "status": "error",
+                "error": f"An unexpected error occurred: {str(e)}"
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=500)
+
+    @http.route('/calendar/events', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
+    def calendar_events(self, **kwargs):
+        """
+        Public endpoint for calendar events with date filtering.
+        Returns events in the standard Odoo calendar.event format.
+        """
+        try:
+            # Get query parameters
+            start_date = kwargs.get('start') or kwargs.get('start_date')
+            end_date = kwargs.get('end') or kwargs.get('end_date')
+            limit = int(kwargs.get('limit', 50))
+            
+            # Build domain for filtering events
+            domain = [
+                ('active', '=', True),
+                ('class', '=', 'public')  # Only public events
+            ]
+            
+            # Add date filters if provided
+            if start_date:
+                domain.append(('start', '>=', start_date))
+            if end_date:
+                domain.append(('start', '<=', end_date))
+            
+            # Search for calendar events
+            events = http.request.env['calendar.event'].sudo().search(
+                domain, 
+                limit=limit, 
+                order='start asc'
+            )
+            
+            # Prepare event data in standard Odoo format
+            events_data = []
+            for event in events:
+                # Get attendees information
+                attendees = []
+                for attendee in event.attendee_ids:
+                    attendees.append({
+                        'id': attendee.id,
+                        'partner_id': attendee.partner_id.id,
+                        'name': attendee.partner_id.name,
+                        'email': attendee.partner_id.email,
+                        'state': attendee.state
+                    })
+                
+                # Get categories/tags
+                categories = []
+                for categ in event.categ_ids:
+                    categories.append({
+                        'id': categ.id,
+                        'name': categ.name
+                    })
+                
+                event_data = {
+                    'id': event.id,
+                    'name': event.name,
+                    'description': event.description or '',
+                    'location': event.location or '',
+                    'start': event.start.isoformat() if event.start else None,
+                    'stop': event.stop.isoformat() if event.stop else None,
+                    'duration': event.duration,
+                    'allday': event.allday,
+                    'state': event.state,
+                    'class': event.class_field,
+                    'show_as': event.show_as,
+                    'user_id': event.user_id.id if event.user_id else None,
+                    'attendees': attendees,
+                    'categories': categories,
+                    'recurrency': event.recurrency,
+                    'rrule': event.rrule or ''
+                }
+                events_data.append(event_data)
+            
+            data = {
+                "status": "ok",
+                "count": len(events_data),
+                "events": events_data
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=200)
+
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing calendar events: {str(e)}", exc_info=True)
+            data = {
+                "status": "error",
+                "error": f"An unexpected error occurred: {str(e)}"
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=500)
+    
+    @http.route('/team/members', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
+    def team_members(self, **kwargs):
+        """
+        Public endpoint for team member contact information.
+        Returns selected partner contacts marked as team members.
+        """
+        try:
+            # Search for partners marked as team members
+            domain = [
+                ('is_company', '=', False),
+                ('active', '=', True),
+                ('is_team_member', '=', True)
+            ]
+            
+            team_members = http.request.env['res.partner'].sudo().search(
+                domain,
+                order='name asc'
+            )
+            
+            members_data = []
+            for member in team_members:
+                member_data = {
+                    'id': member.id,
+                    'name': member.name,
+                    'email': member.email or '',
+                    'phone': member.phone or '',
+                    'mobile': member.mobile or '',
+                    'function': member.function or '',  # Job position
+                    'image_url': f"/web/image/res.partner/{member.id}/image_1920" if member.image_1920 else None,
+                }
+                
+                # Add website if available
+                if member.website:
+                    member_data['website'] = member.website
+                    
+                # Add social media if you have custom fields
+                # member_data['linkedin'] = member.x_linkedin or ''
+                # member_data['github'] = member.x_github or ''
+                
+                members_data.append(member_data)
+            
+            data = {
+                "status": "ok",
+                "count": len(members_data),
+                "members": members_data
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=200)
+            
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing team members: {str(e)}", exc_info=True)
             data = {
                 "status": "error",
                 "error": f"An unexpected error occurred: {str(e)}"

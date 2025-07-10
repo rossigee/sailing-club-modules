@@ -18,6 +18,7 @@
     'data': [
         'views/account_journal_public_checkbox.xml',
         'views/statement_buttons.xml',
+        'views/res_partner.xml',
     ],
     'installable': True,
 }
