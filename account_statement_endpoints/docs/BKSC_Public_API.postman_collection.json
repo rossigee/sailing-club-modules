@@ -1,0 +1,684 @@
+{
+	"info": {
+		"_postman_id": "bksc-public-api",
+		"name": "BKSC Public API",
+		"description": "Ban Krut Sailing Club Public API - Complete collection with examples for banking, calendar, team, and equipment endpoints.\n\n## Features\n- Banking: Account summaries and detailed statements\n- Calendar: Public events with filtering\n- Team: Member contact information  \n- Equipment: Categories and detailed equipment listings\n\n## Rate Limits\n- Standard endpoints: 30 requests/minute, 500 requests/hour\n- Detail views: 20 requests/minute, 300 requests/hour\n- Images: 60 requests/minute, 1000 requests/hour\n\n## Usage\n1. Set environment variables (base_url, lang)\n2. Run requests in any order (no authentication required)\n3. Check response examples for expected formats",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Banking",
+			"item": [
+				{
+					"name": "Get Bank Account Summaries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bank/journals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bank",
+								"journals"
+							]
+						},
+						"description": "Returns a list of publicly viewable bank accounts with their latest statement balances and total balance across all accounts."
+					},
+					"response": [
+						{
+							"name": "Success - Bank Journals",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/bank/journals",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"bank",
+										"journals"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"total_balance\": 125750.50,\n  \"journals\": [\n    {\n      \"id\": 1,\n      \"name\": \"Bank Account - Krungsri\",\n      \"public_slug\": \"BANK\",\n      \"latest_statement\": {\n        \"id\": 31,\n        \"name\": \"BANK/2025/001\",\n        \"date\": \"2025-01-15\",\n        \"balance_end\": 85250.50,\n        \"attachments\": [\n          {\n            \"id\": 45,\n            \"description\": \"January Statement\",\n            \"url\": \"/bank/statements/image/45\"\n          }\n        ]\n      }\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Savings Account - SCB\",\n      \"public_slug\": \"SAVINGS\",\n      \"latest_statement\": {\n        \"id\": 32,\n        \"name\": \"SAVINGS/2025/001\",\n        \"date\": \"2025-01-15\",\n        \"balance_end\": 40500.00,\n        \"attachments\": []\n      }\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Bank Statements by Account",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bank/statements/{{account_slug}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bank",
+								"statements",
+								"{{account_slug}}"
+							]
+						},
+						"description": "Returns bank statements for a specific account by public slug (e.g., 'BANK', 'SAVINGS')."
+					},
+					"response": [
+						{
+							"name": "Success - Bank Statements",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/bank/statements/BANK",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"bank",
+										"statements",
+										"BANK"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"account\": {\n    \"name\": \"Bank Account - Krungsri\",\n    \"number\": \"1234567890\",\n    \"bankname\": \"Krungsri Bank\",\n    \"branch\": \"Ban Krut Branch\"\n  },\n  \"statements\": [\n    {\n      \"id\": 31,\n      \"name\": \"BANK/2025/001\",\n      \"date\": \"2025-01-15\",\n      \"balance_end\": 85250.50,\n      \"attachments\": [\n        {\n          \"id\": 45,\n          \"description\": \"January Statement\",\n          \"url\": \"/bank/statements/image/45\"\n        }\n      ]\n    },\n    {\n      \"id\": 30,\n      \"name\": \"BANK/2024/012\",\n      \"date\": \"2024-12-31\",\n      \"balance_end\": 78450.25,\n      \"attachments\": []\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Detailed Bank Statement",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bank/statements/{{account_slug}}/{{statement_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bank",
+								"statements",
+								"{{account_slug}}",
+								"{{statement_id}}"
+							]
+						},
+						"description": "Returns detailed information for a specific bank statement including transaction lines."
+					},
+					"response": [
+						{
+							"name": "Success - Statement Detail",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/bank/statements/BANK/31",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"bank",
+										"statements",
+										"BANK",
+										"31"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"header\": {\n    \"id\": 31,\n    \"name\": \"BANK/2025/001\",\n    \"date\": \"2025-01-15\",\n    \"balance_start\": 78450.25,\n    \"balance_end\": 85250.50\n  },\n  \"lines\": [\n    {\n      \"date\": \"2025-01-05\",\n      \"payment_ref\": \"TRANSFER-001\",\n      \"ref\": \"Membership fees - John Smith\",\n      \"amount\": 2500.00,\n      \"partner_name\": \"John Smith\"\n    },\n    {\n      \"date\": \"2025-01-10\",\n      \"payment_ref\": \"RENTAL-002\",\n      \"ref\": \"Catamaran rental - weekend\",\n      \"amount\": 4300.25,\n      \"partner_name\": \"Sarah Johnson\"\n    }\n  ],\n  \"attachments\": [\n    {\n      \"id\": 45,\n      \"description\": \"January Statement\",\n      \"url\": \"/bank/statements/image/45\"\n    }\n  ]\n}"
+						}
+					]
+				}
+			],
+			"description": "Banking API endpoints for accessing public bank account information, statements, and transaction details."
+		},
+		{
+			"name": "Calendar",
+			"item": [
+				{
+					"name": "Get Calendar Events",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/calendar/events?lang={{lang}}&limit=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calendar",
+								"events"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Max events to return (1-100)"
+								},
+								{
+									"key": "start",
+									"value": "2025-01-01",
+									"description": "Start date filter (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "end",
+									"value": "2025-12-31",
+									"description": "End date filter (YYYY-MM-DD)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns public calendar events with optional date filtering and localization support."
+					},
+					"response": [
+						{
+							"name": "Success - Calendar Events",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/calendar/events?lang=en&limit=50",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"calendar",
+										"events"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "en"
+										},
+										{
+											"key": "limit",
+											"value": "50"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"count\": 3,\n  \"events\": [\n    {\n      \"id\": 15,\n      \"name\": \"Sailing Regatta 2025\",\n      \"description\": \"Annual sailing competition for all skill levels\",\n      \"location\": \"BKSC Marina\",\n      \"start\": \"2025-02-15T09:00:00+07:00\",\n      \"stop\": \"2025-02-15T17:00:00+07:00\",\n      \"duration\": 8.0,\n      \"allday\": false,\n      \"state\": \"open\",\n      \"class\": \"public\",\n      \"show_as\": \"busy\",\n      \"user_id\": 1,\n      \"attendees\": [\n        {\n          \"id\": 25,\n          \"partner_id\": 45,\n          \"name\": \"Event Coordinator\",\n          \"email\": \"events@bksc.net\",\n          \"state\": \"accepted\"\n        }\n      ],\n      \"categories\": [\n        {\n          \"id\": 5,\n          \"name\": \"Competition\"\n        }\n      ],\n      \"recurrency\": false,\n      \"rrule\": \"\"\n    },\n    {\n      \"id\": 16,\n      \"name\": \"Beginner Sailing Course\",\n      \"description\": \"Learn to sail with certified instructors\",\n      \"location\": \"BKSC Training Area\",\n      \"start\": \"2025-02-20T10:00:00+07:00\",\n      \"stop\": \"2025-02-20T16:00:00+07:00\",\n      \"duration\": 6.0,\n      \"allday\": false,\n      \"state\": \"open\",\n      \"class\": \"public\",\n      \"show_as\": \"busy\",\n      \"user_id\": 2,\n      \"attendees\": [],\n      \"categories\": [\n        {\n          \"id\": 3,\n          \"name\": \"Training\"\n        }\n      ],\n      \"recurrency\": true,\n      \"rrule\": \"FREQ=WEEKLY;BYDAY=SA\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Events with Date Filter",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/calendar/events?start=2025-02-01&end=2025-02-28&lang={{lang}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calendar",
+								"events"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "2025-02-01",
+									"description": "Start date (YYYY-MM-DD)"
+								},
+								{
+									"key": "end",
+									"value": "2025-02-28",
+									"description": "End date (YYYY-MM-DD)"
+								},
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								}
+							]
+						},
+						"description": "Example showing date filtering for events in February 2025."
+					}
+				}
+			],
+			"description": "Calendar API endpoints for accessing public events and activities with filtering and localization support."
+		},
+		{
+			"name": "Team",
+			"item": [
+				{
+					"name": "Get Team Members",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/team/members?lang={{lang}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"team",
+								"members"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								}
+							]
+						},
+						"description": "Returns contact information for publicly listed team members with localization support."
+					},
+					"response": [
+						{
+							"name": "Success - Team Members",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/team/members?lang=en",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"team",
+										"members"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "en"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"count\": 4,\n  \"members\": [\n    {\n      \"id\": 1,\n      \"name\": \"Captain Mike Thompson\",\n      \"email\": \"captain@bksc.net\",\n      \"phone\": \"+66-32-123-456\",\n      \"mobile\": \"+66-89-123-4567\",\n      \"function\": \"Sailing Instructor & Commodore\",\n      \"image_url\": \"/team/images/1\",\n      \"website\": \"https://bksc.net/team/mike\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Sarah Chen\",\n      \"email\": \"sarah@bksc.net\",\n      \"phone\": \"+66-32-123-457\",\n      \"mobile\": \"+66-89-123-4568\",\n      \"function\": \"Equipment Manager\",\n      \"image_url\": null,\n      \"website\": \"https://bksc.net/team/sarah\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"นายสมชาย จันทร์เจ้า\",\n      \"email\": \"somchai@bksc.net\",\n      \"phone\": \"+66-32-123-458\",\n      \"mobile\": \"+66-89-123-4569\",\n      \"function\": \"ผู้ดูแลเรือและอุปกรณ์\",\n      \"image_url\": \"/team/images/3\",\n      \"website\": \"https://bksc.net/team/somchai\"\n    }\n  ]\n}"
+						}
+					]
+				}
+			],
+			"description": "Team API endpoints for accessing public team member information and contact details."
+		},
+		{
+			"name": "Equipment",
+			"item": [
+				{
+					"name": "Get Equipment Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/equipment/categories?lang={{lang}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"equipment",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								}
+							]
+						},
+						"description": "Returns a list of equipment categories with counts of available equipment and localization support."
+					},
+					"response": [
+						{
+							"name": "Success - Equipment Categories",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/equipment/categories?lang=en",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"equipment",
+										"categories"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "en"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"categories\": [\n    {\n      \"id\": 1,\n      \"name\": \"Catamarans\",\n      \"slug\": \"catamarans\",\n      \"description\": \"Multi-hull sailing boats for stability and speed\",\n      \"equipment_count\": 8,\n      \"image_url\": \"/equipment/categories/images/1\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Dinghys\",\n      \"slug\": \"dinghys\",\n      \"description\": \"Small single-hull sailing boats for learning and recreation\",\n      \"equipment_count\": 12,\n      \"image_url\": \"/equipment/categories/images/2\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Windsurfing Equipment\",\n      \"slug\": \"windsurfing\",\n      \"description\": \"Boards, sails, and accessories for windsurfing\",\n      \"equipment_count\": 15,\n      \"image_url\": null\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Safety Equipment\",\n      \"slug\": \"safety\",\n      \"description\": \"Life jackets, harnesses, and emergency equipment\",\n      \"equipment_count\": 45,\n      \"image_url\": \"/equipment/categories/images/4\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Equipment by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/equipment/categories/{{category_slug}}?lang={{lang}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"equipment",
+								"categories",
+								"{{category_slug}}"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								}
+							]
+						},
+						"description": "Returns equipment items in a specific category by slug (e.g., 'catamarans', 'dinghys', 'windsurfing', 'safety')."
+					},
+					"response": [
+						{
+							"name": "Success - Equipment List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/equipment/categories/catamarans?lang=en",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"equipment",
+										"categories",
+										"catamarans"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "en"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"category\": {\n    \"name\": \"Catamarans\",\n    \"description\": \"Multi-hull sailing boats for stability and speed\"\n  },\n  \"equipment\": [\n    {\n      \"id\": 15,\n      \"name\": \"Hobie Cat 16\",\n      \"description\": \"Classic beach catamaran perfect for recreational sailing\",\n      \"condition\": \"excellent\",\n      \"year\": 2020,\n      \"manufacturer\": \"Hobie\",\n      \"model\": \"Cat 16\",\n      \"serial_number\": \"HC16-2020-001\",\n      \"availability\": \"available\",\n      \"rental_rate\": 2500.00,\n      \"images\": [\n        \"/equipment/images/15/main.jpg\",\n        \"/equipment/images/15/detail1.jpg\"\n      ],\n      \"specifications\": {\n        \"Length\": \"4.9m\",\n        \"Beam\": \"2.6m\",\n        \"Weight\": \"145kg\",\n        \"Capacity\": \"2-3 persons\",\n        \"Sail Area\": \"21.8 m²\"\n      }\n    },\n    {\n      \"id\": 16,\n      \"name\": \"Nacra 15\",\n      \"description\": \"High-performance youth catamaran for racing and training\",\n      \"condition\": \"good\",\n      \"year\": 2019,\n      \"manufacturer\": \"Nacra\",\n      \"model\": \"15\",\n      \"serial_number\": \"NC15-2019-002\",\n      \"availability\": \"available\",\n      \"rental_rate\": 3000.00,\n      \"images\": [\n        \"/equipment/images/16/main.jpg\"\n      ],\n      \"specifications\": {\n        \"Length\": \"4.6m\",\n        \"Beam\": \"2.3m\",\n        \"Weight\": \"125kg\",\n        \"Capacity\": \"2 persons\",\n        \"Sail Area\": \"17.5 m²\"\n      }\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Equipment Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/equipment/{{equipment_id}}?lang={{lang}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"equipment",
+								"{{equipment_id}}"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "{{lang}}",
+									"description": "Language (en|th)"
+								}
+							]
+						},
+						"description": "Returns detailed information about a specific piece of equipment including financial values."
+					},
+					"response": [
+						{
+							"name": "Success - Equipment Detail",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/equipment/15?lang=en",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"equipment",
+										"15"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "en"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"equipment\": {\n    \"id\": 15,\n    \"name\": \"Hobie Cat 16\",\n    \"description\": \"Classic beach catamaran perfect for recreational sailing. Features modern rigging and comfortable seating for 2-3 people.\",\n    \"condition\": \"excellent\",\n    \"year\": 2020,\n    \"manufacturer\": \"Hobie\",\n    \"model\": \"Cat 16\",\n    \"serial_number\": \"HC16-2020-001\",\n    \"availability\": \"available\",\n    \"rental_rate\": 2500.00,\n    \"purchase_value\": 180000.00,\n    \"current_value\": 144000.00,\n    \"images\": [\n      \"/equipment/images/15/main.jpg\",\n      \"/equipment/images/15/detail1.jpg\",\n      \"/equipment/images/15/detail2.jpg\",\n      \"/equipment/images/15/rigging.jpg\"\n    ],\n    \"specifications\": {\n      \"Length\": \"4.9m\",\n      \"Beam\": \"2.6m\",\n      \"Weight\": \"145kg\",\n      \"Capacity\": \"2-3 persons\",\n      \"Sail Area\": \"21.8 m²\",\n      \"Hull Material\": \"Fiberglass\",\n      \"Mast Material\": \"Aluminum\",\n      \"Trampoline\": \"Polyester mesh\",\n      \"Storage\": \"Bow compartment\"\n    }\n  }\n}"
+						}
+					]
+				}
+			],
+			"description": "Equipment API endpoints for accessing equipment categories, listings, and detailed specifications with rental information."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default environment variables if not set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'https://odoo.bksc.net');",
+					"}",
+					"if (!pm.environment.get('lang')) {",
+					"    pm.environment.set('lang', 'en');",
+					"}",
+					"if (!pm.environment.get('account_slug')) {",
+					"    pm.environment.set('account_slug', 'BANK');",
+					"}",
+					"if (!pm.environment.get('statement_id')) {",
+					"    pm.environment.set('statement_id', '31');",
+					"}",
+					"if (!pm.environment.get('category_slug')) {",
+					"    pm.environment.set('category_slug', 'catamarans');",
+					"}",
+					"if (!pm.environment.get('equipment_id')) {",
+					"    pm.environment.set('equipment_id', '15');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for all requests",
+					"pm.test('Status code is 200', function () {",
+					"    pm.response.to.have.status(200);",
+					"});",
+					"",
+					"pm.test('Response is JSON', function () {",
+					"    pm.response.to.be.json;",
+					"});",
+					"",
+					"pm.test('Response has status field', function () {",
+					"    const responseJson = pm.response.json();",
+					"    pm.expect(responseJson).to.have.property('status');",
+					"    pm.expect(responseJson.status).to.be.oneOf(['ok', 'error', 'not found']);",
+					"});",
+					"",
+					"pm.test('Response time is reasonable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Rate limiting check",
+					"pm.test('Rate limit headers present', function () {",
+					"    pm.expect(pm.response.headers.has('X-RateLimit-Limit') || pm.response.headers.has('x-ratelimit-limit')).to.be.true;",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://odoo.bksc.net",
+			"type": "string"
+		},
+		{
+			"key": "lang",
+			"value": "en",
+			"type": "string"
+		},
+		{
+			"key": "account_slug",
+			"value": "BANK",
+			"type": "string"
+		},
+		{
+			"key": "statement_id",
+			"value": "31",
+			"type": "string"
+		},
+		{
+			"key": "category_slug",
+			"value": "catamarans",
+			"type": "string"
+		},
+		{
+			"key": "equipment_id",
+			"value": "15",
+			"type": "string"
+		}
+	]
+}
