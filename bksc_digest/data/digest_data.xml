@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Digest Template Override -->
+    <template id="digest_mail_main" inherit_id="digest.digest_mail_main">
+        <xpath expr="//div[@name='kpi_zone']" position="after">
+            <!-- BKSC Custom Content Section -->
+            <div name="bksc_content" style="margin-top: 20px;">
+                <t t-set="bksc_content_provider" t-value="env['digest.bksc']"/>
+                
+                <!-- Bank Statements Summary -->
+                <t t-if="digest.kpi_bksc_bank_statements">
+                    <t t-set="bank_statements_html" t-value="bksc_content_provider.get_bank_statement_summary(digest)"/>
+                    <t t-if="bank_statements_html">
+                        <t t-raw="bank_statements_html"/>
+                    </t>
+                </t>
+                
+                <!-- Recent Transactions -->
+                <t t-if="digest.kpi_bksc_recent_transactions">
+                    <t t-set="transactions_html" t-value="bksc_content_provider.get_recent_transactions(digest)"/>
+                    <t t-if="transactions_html">
+                        <t t-raw="transactions_html"/>
+                    </t>
+                </t>
+                
+                <!-- Account Summary -->
+                <t t-if="digest.kpi_bksc_account_balance">
+                    <t t-set="account_summary_html" t-value="bksc_content_provider.get_account_summary(digest)"/>
+                    <t t-if="account_summary_html">
+                        <t t-raw="account_summary_html"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Add BKSC KPIs to the standard KPI table -->
+    <template id="digest_digest_mail_kpi_bksc_bank_statements" inherit_id="digest.digest_mail_kpi">
+        <xpath expr="//table[@name='kpi_table']/tbody" position="inside">
+            <t t-if="digest.kpi_bksc_bank_statements">
+                <tr>
+                    <td style="padding: 8px;">
+                        <span style="font-weight: 600;">Bank Statements</span>
+                    </td>
+                    <td style="padding: 8px; text-align: right;">
+                        <t t-esc="digest.kpi_bksc_bank_statements_value"/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="digest_digest_mail_kpi_bksc_recent_transactions" inherit_id="digest.digest_mail_kpi">
+        <xpath expr="//table[@name='kpi_table']/tbody" position="inside">
+            <t t-if="digest.kpi_bksc_recent_transactions">
+                <tr>
+                    <td style="padding: 8px;">
+                        <span style="font-weight: 600;">Transactions</span>
+                    </td>
+                    <td style="padding: 8px; text-align: right;">
+                        <t t-esc="digest.kpi_bksc_recent_transactions_value"/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="digest_digest_mail_kpi_bksc_account_balance" inherit_id="digest.digest_mail_kpi">
+        <xpath expr="//table[@name='kpi_table']/tbody" position="inside">
+            <t t-if="digest.kpi_bksc_account_balance">
+                <tr>
+                    <td style="padding: 8px;">
+                        <span style="font-weight: 600;">Total Cash Balance</span>
+                    </td>
+                    <td style="padding: 8px; text-align: right;">
+                        <t t-esc="digest.kpi_bksc_account_balance_value" t-options="{'widget': 'monetary', 'display_currency': digest.currency_id}"/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+</odoo>

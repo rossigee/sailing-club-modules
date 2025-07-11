@@ -427,3 +427,205 @@ class BankStatements(http.Controller):
                 "error": f"An unexpected error occurred: {str(e)}"
             }
             return self._make_json_response(data, headers=None, cookies=None, status=500)
+    
+    @http.route('/equipment/categories', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
+    def equipment_categories(self, **kwargs):
+        """
+        Public endpoint for equipment categories.
+        Returns list of equipment categories with counts of public equipment.
+        Supports language parameter for localized content.
+        """
+        try:
+            # Get language parameter
+            lang = kwargs.get('lang', 'en')
+            
+            # Search for publicly displayed equipment categories
+            domain = [
+                ('public_display', '=', True)
+            ]
+            
+            categories = http.request.env['maintenance.equipment.category'].sudo().search(
+                domain,
+                order='display_order asc, name asc'
+            )
+            
+            categories_data = []
+            for category in categories:
+                # Get localized content
+                localized_name = category.get_localized_name(lang)
+                localized_description = category.get_localized_description(lang)
+                
+                category_data = {
+                    'id': category.id,
+                    'name': localized_name,
+                    'slug': category.public_slug,
+                    'description': localized_description,
+                    'equipment_count': category.equipment_count,
+                    'image_url': f"/web/image/maintenance.equipment.category/{category.id}/image" if category.image else None
+                }
+                categories_data.append(category_data)
+            
+            data = {
+                "status": "ok",
+                "categories": categories_data
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=200)
+            
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing equipment categories: {str(e)}", exc_info=True)
+            data = {
+                "status": "error",
+                "error": f"An unexpected error occurred: {str(e)}"
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=500)
+    
+    @http.route('/equipment/categories/<slug>', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=30, requests_per_hour=500)
+    def equipment_by_category(self, slug, **kwargs):
+        """
+        Public endpoint for equipment in a specific category.
+        Returns equipment items filtered by category slug.
+        Supports language parameter for localized content.
+        """
+        try:
+            # Get language parameter
+            lang = kwargs.get('lang', 'en')
+            
+            # Find the category by slug
+            category = http.request.env['maintenance.equipment.category'].sudo().search([
+                ('public_slug', '=', slug),
+                ('public_display', '=', True)
+            ], limit=1)
+            
+            if not category:
+                data = {
+                    "status": "not found",
+                    "error": f"No public equipment category found with slug '{slug}'"
+                }
+                return self._make_json_response(data, headers=None, cookies=None, status=404)
+            
+            # Get equipment in this category
+            equipment_domain = [
+                ('category_id', '=', category.id),
+                ('public_display', '=', True)
+            ]
+            
+            equipment_items = http.request.env['maintenance.equipment'].sudo().search(
+                equipment_domain,
+                order='name asc'
+            )
+            
+            equipment_data = []
+            for equipment in equipment_items:
+                # Get localized content
+                localized_name = equipment.get_localized_name(lang)
+                localized_description = equipment.get_localized_description(lang)
+                localized_specs = equipment.get_localized_specifications(lang)
+                
+                equipment_item = {
+                    'id': equipment.id,
+                    'name': localized_name,
+                    'description': localized_description,
+                    'condition': equipment.condition,
+                    'year': equipment.year,
+                    'manufacturer': equipment.manufacturer,
+                    'model': equipment.model_name,
+                    'serial_number': equipment.serial_no,
+                    'availability': equipment.availability,
+                    'rental_rate': equipment.rental_rate,
+                    'images': equipment.get_public_images(),
+                    'specifications': localized_specs
+                }
+                equipment_data.append(equipment_item)
+            
+            # Get localized category info
+            category_info = {
+                'name': category.get_localized_name(lang),
+                'description': category.get_localized_description(lang)
+            }
+            
+            data = {
+                "status": "ok",
+                "category": category_info,
+                "equipment": equipment_data
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=200)
+            
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing equipment by category: {str(e)}", exc_info=True)
+            data = {
+                "status": "error",
+                "error": f"An unexpected error occurred: {str(e)}"
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=500)
+    
+    @http.route('/equipment/<int:equipment_id>', auth='public', methods=['GET', 'OPTIONS'], cors='*')
+    @rate_limit(requests_per_minute=20, requests_per_hour=300)  # Lower limits for detailed views
+    def equipment_detail(self, equipment_id, **kwargs):
+        """
+        Public endpoint for detailed equipment information.
+        Returns comprehensive details about a specific piece of equipment.
+        Supports language parameter for localized content.
+        """
+        try:
+            # Get language parameter
+            lang = kwargs.get('lang', 'en')
+            
+            # Find the equipment by ID
+            equipment = http.request.env['maintenance.equipment'].sudo().search([
+                ('id', '=', equipment_id),
+                ('public_display', '=', True)
+            ], limit=1)
+            
+            if not equipment:
+                data = {
+                    "status": "not found",
+                    "error": f"No public equipment found with ID {equipment_id}"
+                }
+                return self._make_json_response(data, headers=None, cookies=None, status=404)
+            
+            # Get localized content
+            localized_name = equipment.get_localized_name(lang)
+            localized_description = equipment.get_localized_description(lang)
+            localized_specs = equipment.get_localized_specifications(lang)
+            
+            # Build detailed equipment data
+            equipment_data = {
+                'id': equipment.id,
+                'name': localized_name,
+                'description': localized_description,
+                'condition': equipment.condition,
+                'year': equipment.year,
+                'manufacturer': equipment.manufacturer,
+                'model': equipment.model_name,
+                'serial_number': equipment.serial_no,
+                'availability': equipment.availability,
+                'rental_rate': equipment.rental_rate,
+                'purchase_value': equipment.purchase_value,
+                'current_value': equipment.current_value,
+                'images': equipment.get_public_images(),
+                'specifications': localized_specs,
+                'category': {
+                    'id': equipment.category_id.id,
+                    'name': equipment.category_id.get_localized_name(lang) if equipment.category_id else None,
+                    'slug': equipment.category_id.public_slug if equipment.category_id else None
+                }
+            }
+            
+            data = {
+                "status": "ok",
+                "equipment": equipment_data
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=200)
+            
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing equipment detail: {str(e)}", exc_info=True)
+            data = {
+                "status": "error",
+                "error": f"An unexpected error occurred: {str(e)}"
+            }
+            return self._make_json_response(data, headers=None, cookies=None, status=500)

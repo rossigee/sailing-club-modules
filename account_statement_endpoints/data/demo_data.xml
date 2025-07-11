@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Public Access Configuration -->
+        
+        <!-- Enable digest emails by default -->
+        <record id="config_digest_emails" model="ir.config_parameter">
+            <field name="key">digest.default_digest_emails</field>
+            <field name="value">True</field>
+        </record>
+        
+        <!-- Configure demo bank journals for public access -->
+        <function model="account.journal" name="_setup_demo_public_access">
+            <value eval="[]"/>
+        </function>
+        
+        <!-- Configure demo team members -->
+        <function model="res.partner" name="_setup_demo_team_members">
+            <value eval="[]"/>
+        </function>
+        
+        <!-- Configure demo equipment -->
+        <function model="maintenance.equipment.category" name="_setup_demo_equipment_categories">
+            <value eval="[]"/>
+        </function>
+        
+        <function model="maintenance.equipment" name="_setup_demo_equipment">
+            <value eval="[]"/>
+        </function>
+        
+        <!-- Configure demo calendar events -->
+        <function model="calendar.event" name="_setup_demo_calendar_events">
+            <value eval="[]"/>
+        </function>
+        
+    </data>
+</odoo>

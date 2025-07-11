@@ -14,11 +14,19 @@
     """,    
     'depends': [
         'account_statement_base',
+        'maintenance',
+        'account_asset',
     ],
     'data': [
         'views/account_journal_public_checkbox.xml',
         'views/statement_buttons.xml',
         'views/res_partner.xml',
+        'views/maintenance_equipment_category_views.xml',
+        'views/maintenance_equipment_views.xml',
+        'views/ir_attachment_views.xml',
+        'views/account_asset_views.xml',
+        'views/public_website_menu.xml',
+        'data/demo_data.xml',
     ],
     'installable': True,
 }

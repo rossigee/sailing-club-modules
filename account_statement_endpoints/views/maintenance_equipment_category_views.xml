@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Equipment Category Form View Extension -->
+        <record id="maintenance_equipment_category_view_form_public" model="ir.ui.view">
+            <field name="name">maintenance.equipment.category.form.public</field>
+            <field name="model">maintenance.equipment.category</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_category_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <group name="public_display_group" string="Public Website Display">
+                        <group>
+                            <field name="public_display"/>
+                            <field name="public_slug" attrs="{'invisible': [('public_display', '=', False)], 'required': [('public_display', '=', True)]}"/>
+                            <field name="display_order" attrs="{'invisible': [('public_display', '=', False)]}"/>
+                            <field name="equipment_count" attrs="{'invisible': [('public_display', '=', False)]}"/>
+                        </group>
+                        <group>
+                            <field name="image" widget="image" class="oe_avatar" attrs="{'invisible': [('public_display', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <group name="public_content_group" string="Public Content" attrs="{'invisible': [('public_display', '=', False)]}">
+                        <field name="public_description" placeholder="General description for public display"/>
+                    </group>
+                    <group name="multilingual_group" string="Multilingual Content" attrs="{'invisible': [('public_display', '=', False)]}">
+                        <group string="English Content">
+                            <field name="display_name_en" placeholder="Display name in English (optional)"/>
+                            <field name="public_description_en" placeholder="Description in English"/>
+                        </group>
+                        <group string="Thai Content">
+                            <field name="display_name_th" placeholder="Display name in Thai (optional)"/>
+                            <field name="public_description_th" placeholder="Description in Thai"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Equipment Category Tree View Extension -->
+        <record id="maintenance_equipment_category_view_tree_public" model="ir.ui.view">
+            <field name="name">maintenance.equipment.category.tree.public</field>
+            <field name="model">maintenance.equipment.category</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_category_view_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="public_display" widget="boolean_toggle"/>
+                    <field name="public_slug"/>
+                    <field name="equipment_count"/>
+                    <field name="display_order"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Equipment Category Search View Extension -->
+        <record id="maintenance_equipment_category_view_search_public" model="ir.ui.view">
+            <field name="name">maintenance.equipment.category.search.public</field>
+            <field name="model">maintenance.equipment.category</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_category_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <filter string="Public Display" name="filter_public_display" domain="[('public_display', '=', True)]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Public Display" name="group_public_display" context="{'group_by': 'public_display'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Menu Item for Public Equipment Categories -->
+        <record id="action_maintenance_equipment_category_public" model="ir.actions.act_window">
+            <field name="name">Public Equipment Categories</field>
+            <field name="res_model">maintenance.equipment.category</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('public_display', '=', True)]</field>
+            <field name="context">{'default_public_display': True}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first public equipment category!
+                </p>
+                <p>
+                    Equipment categories that are marked for public display will appear on the sailing club website.
+                    Configure multilingual content to support both English and Thai visitors.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

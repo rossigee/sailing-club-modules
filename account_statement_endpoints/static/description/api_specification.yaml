@@ -1,0 +1,800 @@
+openapi: 3.0.3
+info:
+  title: Ban Krut Sailing Club Public API
+  description: |
+    Public REST API for Ban Krut Sailing Club website integration.
+    
+    This API provides read-only access to public information about:
+    - Bank account statements and financial data
+    - Calendar events and activities  
+    - Team member contact information
+    - Equipment and asset inventory
+    
+    All endpoints are rate-limited and require no authentication for public data.
+    
+    ## Rate Limits
+    - Standard endpoints: 30 requests/minute, 500 requests/hour
+    - Detail views: 20 requests/minute, 300 requests/hour  
+    - Images: 60 requests/minute, 1000 requests/hour
+    
+    ## Localization
+    Most endpoints support language parameter `lang=en|th` for localized content.
+    
+    ## Base URL
+    Production: `https://odoo.bksc.net`
+    
+  version: 1.1.0
+  contact:
+    name: Ban Krut Sailing Club
+    url: https://bksc.net
+    email: info@bksc.net
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+
+servers:
+  - url: https://odoo.bksc.net
+    description: Production server
+  - url: http://localhost:8080
+    description: Local mock server for development
+
+paths:
+  /bank/journals:
+    get:
+      tags:
+        - Banking
+      summary: Get bank account summaries
+      description: Returns a list of publicly viewable bank accounts with their latest statement balances.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankJournalsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bank/statements/{slug}:
+    get:
+      tags:
+        - Banking
+      summary: Get bank statements for account
+      description: Returns bank statements for a specific account by public slug.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Public slug identifier for the bank account (e.g., 'BANK', 'SAVINGS')
+          schema:
+            type: string
+            example: BANK
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatementsResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bank/statements/{slug}/{id}:
+    get:
+      tags:
+        - Banking
+      summary: Get detailed bank statement
+      description: Returns detailed information for a specific bank statement including transaction lines.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Public slug identifier for the bank account
+          schema:
+            type: string
+            example: BANK
+        - name: id
+          in: path
+          required: true
+          description: Statement ID
+          schema:
+            type: integer
+            example: 31
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatementDetailResponse'
+        '404':
+          description: Statement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /calendar/events:
+    get:
+      tags:
+        - Calendar
+      summary: Get calendar events
+      description: Returns public calendar events with optional date filtering.
+      parameters:
+        - name: start
+          in: query
+          description: Start date filter (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: '2025-01-01'
+        - name: end
+          in: query
+          description: End date filter (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: '2025-12-31'
+        - name: limit
+          in: query
+          description: Maximum number of events to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: lang
+          in: query
+          description: Language for localized content
+          schema:
+            type: string
+            enum: [en, th]
+            default: en
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEventsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /team/members:
+    get:
+      tags:
+        - Team
+      summary: Get team member information
+      description: Returns contact information for publicly listed team members.
+      parameters:
+        - name: lang
+          in: query
+          description: Language for localized content
+          schema:
+            type: string
+            enum: [en, th]
+            default: en
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembersResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /equipment/categories:
+    get:
+      tags:
+        - Equipment
+      summary: Get equipment categories
+      description: Returns a list of equipment categories with counts of available equipment.
+      parameters:
+        - name: lang
+          in: query
+          description: Language for localized content
+          schema:
+            type: string
+            enum: [en, th]
+            default: en
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentCategoriesResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /equipment/categories/{slug}:
+    get:
+      tags:
+        - Equipment
+      summary: Get equipment in category
+      description: Returns equipment items in a specific category.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Category slug identifier (e.g., 'catamarans', 'dinghys')
+          schema:
+            type: string
+            example: catamarans
+        - name: lang
+          in: query
+          description: Language for localized content
+          schema:
+            type: string
+            enum: [en, th]
+            default: en
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentListResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /equipment/{id}:
+    get:
+      tags:
+        - Equipment
+      summary: Get equipment details
+      description: Returns detailed information about a specific piece of equipment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Equipment ID
+          schema:
+            type: integer
+            example: 15
+        - name: lang
+          in: query
+          description: Language for localized content
+          schema:
+            type: string
+            enum: [en, th]
+            default: en
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentDetailResponse'
+        '404':
+          description: Equipment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # Common response types
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error, 'not found']
+        error:
+          type: string
+          description: Error message
+      required:
+        - status
+        - error
+
+    # Banking schemas
+    BankJournalsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        total_balance:
+          type: number
+          format: float
+          description: Total balance across all accounts
+        journals:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankJournal'
+      required:
+        - status
+        - total_balance
+        - journals
+
+    BankJournal:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        public_slug:
+          type: string
+        latest_statement:
+          $ref: '#/components/schemas/BankStatementSummary'
+      required:
+        - id
+        - name
+        - public_slug
+        - latest_statement
+
+    BankStatementsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        account:
+          $ref: '#/components/schemas/BankAccount'
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankStatementSummary'
+      required:
+        - status
+        - account
+        - statements
+
+    BankAccount:
+      type: object
+      properties:
+        name:
+          type: string
+        number:
+          type: string
+        bankname:
+          type: string
+        branch:
+          type: string
+      required:
+        - name
+        - number
+        - bankname
+        - branch
+
+    BankStatementSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        balance_end:
+          type: number
+          format: float
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankStatementAttachment'
+      required:
+        - id
+        - name
+        - date
+        - balance_end
+        - attachments
+
+    BankStatementDetailResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        header:
+          $ref: '#/components/schemas/BankStatementHeader'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankStatementLine'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankStatementAttachment'
+      required:
+        - status
+        - header
+        - lines
+        - attachments
+
+    BankStatementHeader:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        balance_start:
+          type: number
+          format: float
+        balance_end:
+          type: number
+          format: float
+      required:
+        - id
+        - name
+        - date
+        - balance_start
+        - balance_end
+
+    BankStatementLine:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        payment_ref:
+          type: string
+        ref:
+          type: string
+        amount:
+          type: number
+          format: float
+        partner_name:
+          type: string
+      required:
+        - date
+        - payment_ref
+        - amount
+
+    BankStatementAttachment:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+      required:
+        - id
+        - description
+        - url
+
+    # Calendar schemas
+    CalendarEventsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        count:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEvent'
+      required:
+        - status
+        - count
+        - events
+
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        start:
+          type: string
+          format: date-time
+        stop:
+          type: string
+          format: date-time
+        duration:
+          type: number
+          format: float
+        allday:
+          type: boolean
+        state:
+          type: string
+          enum: [draft, open]
+        class:
+          type: string
+          enum: [public, private, confidential]
+        show_as:
+          type: string
+          enum: [free, busy]
+        user_id:
+          type: integer
+          nullable: true
+        attendees:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEventAttendee'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEventCategory'
+        recurrency:
+          type: boolean
+        rrule:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - location
+        - start
+        - stop
+        - duration
+        - allday
+        - state
+        - class
+        - show_as
+        - attendees
+        - categories
+        - recurrency
+        - rrule
+
+    CalendarEventAttendee:
+      type: object
+      properties:
+        id:
+          type: integer
+        partner_id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        state:
+          type: string
+          enum: [needsAction, tentative, declined, accepted]
+      required:
+        - id
+        - partner_id
+        - name
+        - email
+        - state
+
+    CalendarEventCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    # Team schemas
+    TeamMembersResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        count:
+          type: integer
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMember'
+      required:
+        - status
+        - count
+        - members
+
+    TeamMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        mobile:
+          type: string
+        function:
+          type: string
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        website:
+          type: string
+          format: uri
+      required:
+        - id
+        - name
+        - email
+        - phone
+        - mobile
+        - function
+        - image_url
+
+    # Equipment schemas
+    EquipmentCategoriesResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquipmentCategory'
+      required:
+        - status
+        - categories
+
+    EquipmentCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: Localized category name
+        slug:
+          type: string
+        description:
+          type: string
+          description: Localized category description
+        equipment_count:
+          type: integer
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+        - id
+        - name
+        - slug
+        - description
+        - equipment_count
+        - image_url
+
+    EquipmentListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        category:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+          required:
+            - name
+            - description
+        equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/Equipment'
+      required:
+        - status
+        - category
+        - equipment
+
+    Equipment:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: Localized equipment name
+        description:
+          type: string
+          description: Localized equipment description
+        condition:
+          type: string
+          enum: [excellent, good, fair, poor]
+        year:
+          type: integer
+        manufacturer:
+          type: string
+        model:
+          type: string
+        serial_number:
+          type: string
+        availability:
+          type: string
+          enum: [available, rented, maintenance, retired]
+        rental_rate:
+          type: number
+          format: float
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+          description: Localized specifications as key-value pairs
+      required:
+        - id
+        - name
+        - description
+        - condition
+        - availability
+        - images
+        - specifications
+
+    EquipmentDetailResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        equipment:
+          allOf:
+            - $ref: '#/components/schemas/Equipment'
+            - type: object
+              properties:
+                purchase_value:
+                  type: number
+                  format: float
+                  description: Original purchase value
+                current_value:
+                  type: number
+                  format: float
+                  description: Current book value after depreciation
+      required:
+        - status
+        - equipment
+
+tags:
+  - name: Banking
+    description: Bank account statements and financial data
+  - name: Calendar
+    description: Events and activities calendar
+  - name: Team
+    description: Team member contact information
+  - name: Equipment
+    description: Equipment and asset inventory

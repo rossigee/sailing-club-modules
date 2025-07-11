@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Main Menu for Public Website Management -->
+        <menuitem id="menu_public_website_main"
+                  name="Public Website"
+                  sequence="50"
+                  web_icon="static/description/icon.png"/>
+
+        <!-- Banking Submenu -->
+        <menuitem id="menu_public_website_banking"
+                  name="Banking"
+                  parent="menu_public_website_main"
+                  sequence="10"/>
+
+        <menuitem id="menu_bank_journals_public"
+                  name="Public Bank Accounts"
+                  parent="menu_public_website_banking"
+                  action="account.action_account_journal_form"
+                  sequence="10"/>
+
+        <!-- Calendar Submenu -->
+        <menuitem id="menu_public_website_calendar"
+                  name="Calendar"
+                  parent="menu_public_website_main"
+                  sequence="20"/>
+
+        <menuitem id="menu_calendar_events_public"
+                  name="Public Events"
+                  parent="menu_public_website_calendar"
+                  action="calendar.action_calendar_event"
+                  sequence="10"/>
+
+        <!-- Team Submenu -->
+        <menuitem id="menu_public_website_team"
+                  name="Team Members"
+                  parent="menu_public_website_main"
+                  sequence="30"/>
+
+        <menuitem id="menu_team_members_public"
+                  name="Public Team Members"
+                  parent="menu_public_website_team"
+                  action="base.action_partner_form"
+                  sequence="10"/>
+
+        <!-- Equipment Submenu -->
+        <menuitem id="menu_public_website_equipment"
+                  name="Equipment"
+                  parent="menu_public_website_main"
+                  sequence="40"/>
+
+        <menuitem id="menu_equipment_categories_public"
+                  name="Equipment Categories"
+                  parent="menu_public_website_equipment"
+                  action="action_maintenance_equipment_category_public"
+                  sequence="10"/>
+
+        <menuitem id="menu_equipment_public"
+                  name="Equipment Items"
+                  parent="menu_public_website_equipment"
+                  action="action_maintenance_equipment_public"
+                  sequence="20"/>
+
+        <menuitem id="menu_equipment_public_kanban"
+                  name="Equipment Kanban"
+                  parent="menu_public_website_equipment"
+                  action="action_maintenance_equipment_public_kanban"
+                  sequence="30"/>
+
+        <!-- API Documentation Submenu -->
+        <menuitem id="menu_public_website_api"
+                  name="API Documentation"
+                  parent="menu_public_website_main"
+                  sequence="50"/>
+
+        <!-- Action for API Documentation -->
+        <record id="action_api_documentation" model="ir.actions.act_url">
+            <field name="name">API Documentation</field>
+            <field name="url">/web/static/description/api_specification.yaml</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_api_documentation"
+                  name="OpenAPI Specification"
+                  parent="menu_public_website_api"
+                  action="action_api_documentation"
+                  sequence="10"/>
+
+    </data>
+</odoo>
